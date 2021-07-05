@@ -1,5 +1,6 @@
 package javakamp.hrms.business.concretes;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -13,22 +14,23 @@ import javakamp.hrms.core.utilities.results.DataResult;
 import javakamp.hrms.core.utilities.results.Result;
 import javakamp.hrms.core.utilities.results.SuccessDataResult;
 import javakamp.hrms.core.utilities.results.SuccessResult;
+import javakamp.hrms.dataAccess.abstracts.CandidatesDao;
 import javakamp.hrms.dataAccess.abstracts.CurriculumVitaeDao;
 import javakamp.hrms.entities.concretes.CurriculumVitae;
+import javakamp.hrms.entities.dtos.CurriculumVitaeDto;
 @Service
 public class CurriculumVitaeManager implements CurriculumVitaeService{
 
 	private CurriculumVitaeDao curriculumVitaeDao;
 	private CloudinaryService cloudinaryService;
+	private CandidatesDao candidatesDao;
 	@Autowired
-	public CurriculumVitaeManager(CurriculumVitaeDao curriculumVitaeDao, CloudinaryService cloudinaryService) {
+	public CurriculumVitaeManager(CurriculumVitaeDao curriculumVitaeDao, CloudinaryService cloudinaryService,CandidatesDao candidatesDao) {
 		super();
 		this.curriculumVitaeDao = curriculumVitaeDao;
 		this.cloudinaryService = cloudinaryService;
+		this.candidatesDao =candidatesDao;
 	}
-
-	
-	
 
 	@Override
 	public DataResult<List<CurriculumVitae>> getAll() {
@@ -36,7 +38,13 @@ public class CurriculumVitaeManager implements CurriculumVitaeService{
 	}
 
 	@Override
-	public Result add(CurriculumVitae curriculumVitae) {
+	public Result add(CurriculumVitaeDto curriculumVitaeDto) {
+		CurriculumVitae curriculumVitae=new CurriculumVitae();
+		curriculumVitae.setDescription(curriculumVitaeDto.getDescription());
+		curriculumVitae.setGitHub(curriculumVitaeDto.getGitHub());
+		curriculumVitae.setLinkedin(curriculumVitaeDto.getLinkedin());
+		curriculumVitae.setCandidate(this.candidatesDao.getOne(curriculumVitaeDto.getCandıdateId()));
+		curriculumVitae.setCreationDate(LocalDate.now());
 		this.curriculumVitaeDao.save(curriculumVitae);
 		return new SuccessResult(true,"CV eklendi");
 	}
@@ -59,6 +67,19 @@ public class CurriculumVitaeManager implements CurriculumVitaeService{
 	@Override
 	public DataResult<List<CurriculumVitae>> findAllCandidateId(int candidateId) {
 		return new SuccessDataResult<List<CurriculumVitae>>(curriculumVitaeDao.findAllByCandidateId(candidateId));
+	}
+
+	@Override
+	public Result update(CurriculumVitaeDto curriculumVitaeDto) {
+		CurriculumVitae curriculumVitae=new CurriculumVitae();
+		curriculumVitae.setDescription(curriculumVitaeDto.getDescription());
+		curriculumVitae.setGitHub(curriculumVitaeDto.getGitHub());
+		curriculumVitae.setLinkedin(curriculumVitaeDto.getLinkedin());
+		curriculumVitae.setCreationDate(LocalDate.now());
+		curriculumVitae.setCandidate(this.candidatesDao.getOne(curriculumVitaeDto.getCandıdateId()));
+		curriculumVitae.setId(curriculumVitaeDto.getId());
+		this.curriculumVitaeDao.save(curriculumVitae);
+		return new SuccessResult(true,"güncelleme başrılı");
 	}
 
 }
